@@ -1,6 +1,7 @@
-from django.shortcuts import render
+from django.shortcuts import render, redirect
 from django.views.generic.edit import CreateView, UpdateView, DeleteView
 from .models import Guitar
+from .forms import PerformingForm
 
 # Create your views here.
 def home(request):
@@ -17,8 +18,9 @@ def guitars_index(request):
 
 def guitars_detail(request, guitar_id):
   guitar = Guitar.objects.get(id=guitar_id)
+  performing_form = PerformingForm()
   return render(request, 'guitars/detail.html', {
-    'guitar': guitar
+    'guitar': guitar, 'performing_form': performing_form
   })
 
 class GuitarCreate(CreateView):
@@ -32,3 +34,11 @@ class GuitarUpdate(UpdateView):
 class GuitarDelete(DeleteView):
   model = Guitar
   success_url = '/guitars'
+
+def add_performing(request, guitar_id):
+  form = PerformingForm(request.POST)
+  if form.is_valid():
+    new_performing = form.save(commit=False)
+    new_performing.guitar_id = guitar_id
+    new_performing.save()
+  return redirect('detail', guitar_id=guitar_id)  
